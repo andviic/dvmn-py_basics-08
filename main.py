@@ -1,5 +1,7 @@
 import json
 import requests
+from geopy import distance
+from pprint import pprint
 
 
 def fetch_coordinates(apikey, address):
@@ -29,14 +31,24 @@ with open("coffee.json", "r", encoding="CP1251") as coffee:
 coffee_list = json.loads(coffee_contents)
 
 apikey = "9b2793be-1d14-4c36-aa34-18b7975af9a0"
-location = input("Где вы находитесь? ")
-coords = fetch_coordinates(apikey, location)
+location_1 = input("Где вы находитесь? ")
+
+coords = fetch_coordinates(apikey, location_1)
 print(f"Ваши координаты: {coords}")
 
+radius = 1
+сoffee_nearby_list = []
 
-# for coffee_shop_name in coffee_list:
-#     print(
-#         f"""{coffee_shop_name['Name']}
-# {coffee_shop_name['geoData']['coordinates'][1]} \
-# {coffee_shop_name['geoData']['coordinates'][0]}"""
-#     )
+for coffee_shop in coffee_list:
+    dist = distance.distance(coords, coffee_shop["geoData"]["coordinates"]).km
+    coffee_nearby = {
+        "title": coffee_shop["Name"],
+        "distance": dist,
+        "latitude": coffee_shop["geoData"]["coordinates"][1],
+        "longitude": coffee_shop["geoData"]["coordinates"][0],
+    }
+
+    if dist <= radius:
+        сoffee_nearby_list.append(coffee_nearby)
+
+pprint(сoffee_nearby_list, sort_dicts=False)
