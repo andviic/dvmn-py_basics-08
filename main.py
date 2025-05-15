@@ -47,7 +47,7 @@ def get_coffee_nearby(col, coffee_shops, coords):
     return сoffee_shops_nearby
 
 
-def coffee_on_map(сoffee_shops_nearby, coords):
+def get_coffee_on_map(сoffee_shops_nearby, coords):
     map = folium.Map(location=(coords[1], coords[0]), zoom_start=15)
 
     for сoffee_shop in сoffee_shops_nearby:
@@ -72,7 +72,7 @@ def main():
     coords = fetch_coordinates(apikey, location)
     сoffee_shops_nearby = get_coffee_nearby(5, coffee_shops, coords)
 
-    coffee_on_map(сoffee_shops_nearby, coords)
+    get_coffee_on_map(сoffee_shops_nearby, coords)
 
 
 if __name__ == "__main__":
