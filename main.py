@@ -3,7 +3,6 @@ import requests
 from dotenv import load_dotenv
 import os
 from geopy import distance
-from pprint import pprint
 import folium
 
 
@@ -62,20 +61,16 @@ def coffee_on_map(сoffee_shops_nearby, coords):
 
 
 def main():
-    load_dotenv()
-    apikey = os.getenv("API_KEY")
-
     location = input("Где вы находитесь? ")
 
     with open("coffee.json", "r", encoding="CP1251") as coffee:
         coffee_contents = coffee.read()
     coffee_shops = json.loads(coffee_contents)
 
+    load_dotenv()
+    apikey = os.getenv("API_KEY")
     coords = fetch_coordinates(apikey, location)
-    print(f"Ваши координаты: {coords}")
-
     сoffee_shops_nearby = get_coffee_nearby(5, coffee_shops, coords)
-    pprint(сoffee_shops_nearby, sort_dicts=False)
 
     coffee_on_map(сoffee_shops_nearby, coords)
 
