@@ -1,7 +1,10 @@
 import json
 import requests
+from dotenv import load_dotenv
+import os
 from geopy import distance
 from pprint import pprint
+import folium
 
 
 def fetch_coordinates(apikey, address):
@@ -25,30 +28,57 @@ def fetch_coordinates(apikey, address):
     return lon, lat
 
 
-with open("coffee.json", "r", encoding="CP1251") as coffee:
-    coffee_contents = coffee.read()
+def get_distance(coffee):
+    return coffee["distance"]
 
-coffee_list = json.loads(coffee_contents)
 
-apikey = "9b2793be-1d14-4c36-aa34-18b7975af9a0"
-location_1 = input("Где вы находитесь? ")
+def get_coffee_nearby(col, coffee_shops, coords):
+    сoffee_shops_list = []
+    for coffee_shop in coffee_shops:
+        dist = distance.distance(coords, coffee_shop["geoData"]["coordinates"]).km
+        сoffee_shops_list.append(
+            {
+                "title": coffee_shop["Name"],
+                "distance": dist,
+                "latitude": coffee_shop["geoData"]["coordinates"][1],
+                "longitude": coffee_shop["geoData"]["coordinates"][0],
+            }
+        )
+    сoffee_shops_nearby = sorted(сoffee_shops_list, key=get_distance)[:col]
+    return сoffee_shops_nearby
 
-coords = fetch_coordinates(apikey, location_1)
-print(f"Ваши координаты: {coords}")
 
-radius = 1
-сoffee_nearby_list = []
+def coffee_on_map(сoffee_shops_nearby, coords):
+    map = folium.Map(location=(coords[1], coords[0]), zoom_start=15)
 
-for coffee_shop in coffee_list:
-    dist = distance.distance(coords, coffee_shop["geoData"]["coordinates"]).km
-    coffee_nearby = {
-        "title": coffee_shop["Name"],
-        "distance": dist,
-        "latitude": coffee_shop["geoData"]["coordinates"][1],
-        "longitude": coffee_shop["geoData"]["coordinates"][0],
-    }
+    for сoffee_shop in сoffee_shops_nearby:
+        folium.Marker(
+            location=[сoffee_shop["latitude"], сoffee_shop["longitude"]],
+            tooltip=сoffee_shop["title"],
+            icon=folium.Icon(color="red"),
+        ).add_to(map)
 
-    if dist <= radius:
-        сoffee_nearby_list.append(coffee_nearby)
+    return map.save("index.html")
 
-pprint(сoffee_nearby_list, sort_dicts=False)
+
+def main():
+    load_dotenv()
+    apikey = os.getenv("API_KEY")
+
+    location = input("Где вы находитесь? ")
+
+    with open("coffee.json", "r", encoding="CP1251") as coffee:
+        coffee_contents = coffee.read()
+    coffee_shops = json.loads(coffee_contents)
+
+    coords = fetch_coordinates(apikey, location)
+    print(f"Ваши координаты: {coords}")
+
+    сoffee_shops_nearby = get_coffee_nearby(5, coffee_shops, coords)
+    pprint(сoffee_shops_nearby, sort_dicts=False)
+
+    coffee_on_map(сoffee_shops_nearby, coords)
+
+
+if __name__ == "__main__":
+    main()
