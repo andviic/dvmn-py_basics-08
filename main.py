@@ -49,12 +49,16 @@ def get_coffee_nearby(col, coffee_shops, coords):
 
 def get_coffee_on_map(сoffee_shops_nearby, coords):
     map = folium.Map(location=(coords[1], coords[0]), zoom_start=15)
+    folium.Marker(
+        location=[coords[1], coords[0]],
+        tooltip='Я здесь!',
+        icon=folium.Icon(color="red"),
+    ).add_to(map)
 
     for сoffee_shop in сoffee_shops_nearby:
         folium.Marker(
             location=[сoffee_shop["latitude"], сoffee_shop["longitude"]],
             tooltip=сoffee_shop["title"],
-            icon=folium.Icon(color="red"),
         ).add_to(map)
 
     return map.save("index.html")
