@@ -24,7 +24,7 @@ def fetch_coordinates(apikey, address):
 
     most_relevant = found_places[0]
     lon, lat = most_relevant["GeoObject"]["Point"]["pos"].split(" ")
-    return lon, lat
+    return lat, lon
 
 
 def get_distance(coffee):
@@ -34,13 +34,15 @@ def get_distance(coffee):
 def get_coffee_nearby(col, coffee_shops, coords):
     сoffee_shops_list = []
     for coffee_shop in coffee_shops:
-        dist = distance.distance(coords, coffee_shop["geoData"]["coordinates"]).km
+        lat = coffee_shop["geoData"]["coordinates"][1]
+        lon = coffee_shop["geoData"]["coordinates"][0]
+        dist = distance.distance(coords, (lat, lon)).km
         сoffee_shops_list.append(
             {
                 "title": coffee_shop["Name"],
                 "distance": dist,
-                "latitude": coffee_shop["geoData"]["coordinates"][1],
-                "longitude": coffee_shop["geoData"]["coordinates"][0],
+                "latitude": lat,
+                "longitude": lon,
             }
         )
     сoffee_shops_nearby = sorted(сoffee_shops_list, key=get_distance)[:col]
@@ -48,17 +50,18 @@ def get_coffee_nearby(col, coffee_shops, coords):
 
 
 def get_coffee_on_map(сoffee_shops_nearby, coords):
-    map = folium.Map(location=(coords[1], coords[0]), zoom_start=15)
+    map = folium.Map(location=coords, zoom_start=15)
     folium.Marker(
-        location=[coords[1], coords[0]],
-        tooltip='Я здесь!',
-        icon=folium.Icon(color="red"),
+        location=coords,
+        tooltip="Я здесь!",
+        icon=folium.Icon(icon="person", prefix="fa", color="red"),
     ).add_to(map)
 
     for сoffee_shop in сoffee_shops_nearby:
         folium.Marker(
             location=[сoffee_shop["latitude"], сoffee_shop["longitude"]],
             tooltip=сoffee_shop["title"],
+            icon=folium.Icon(icon="mug-hot", prefix="fa", color="green"),
         ).add_to(map)
 
     return map.save("index.html")
